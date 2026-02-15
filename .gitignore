@@ -1,0 +1,42 @@
+# Laravel
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+
+# Environment files
+.env
+.env.backup
+.env.production
+.env.local
+
+# Logs
+/storage/logs
+npm-debug.log
+yarn-error.log
+
+# Cache
+/bootstrap/cache/*.php
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/views
+
+# PHPUnit
+/phpunit.result.cache
+
+# Composer
+composer.lock
+
+# Vite / Build
+/public/build
+/dist
+
+# IDE
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
