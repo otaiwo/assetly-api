@@ -58,38 +58,90 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-
-assetly-api/           ← Laravel Backend
-│
+assetly-api/
+├── .env
+├── .env.example
 ├── app/
+│   ├── Exceptions/
+│   │   └── Handler.php
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── AuthController.php          ← Login/Register, Sanctum tokens
-│   │   │   ├── ProductController.php       ← CRUD, list, details
-│   │   │   ├── CategoryController.php      ← List categories
-│   │   │   ├── SubscriptionController.php  ← Stripe integration
-│   │   │   ├── OrderController.php         ← One-time purchases
-│   │   │   └── AdminController.php         ← User & product management
-│   │   └── Middleware/
-│   │       └── RoleMiddleware.php         ← Restrict access by role
-│   │
+│   │   │   ├── AdminController.php          ← User & product management
+│   │   │   ├── AuthController.php           ← Login/Register, Sanctum tokens
+│   │   │   ├── CategoryController.php       ← List categories
+│   │   │   ├── OrderController.php          ← One-time purchases
+│   │   │   ├── ProductController.php        ← CRUD, list, details
+│   │   │   └── SubscriptionController.php   ← Payment integration (stripe, monify, paystack)
+│   │   ├── Middleware/
+│   │   │   └── RoleMiddleware.php           ← Restrict access by role
+│   │   └── Resources/
+│   │       └── CategoryResource.php
 │   ├── Models/
-│   │   ├── User.php
-│   │   ├── Product.php
 │   │   ├── Category.php
-│   │   ├── Subscription.php
-│   │   ├── Order.php
 │   │   ├── Download.php
-│   │   └── Payout.php
-│   │
-│   └── Policies/                           ← Optional: fine-grained access
-│
-├── routes/
-│   ├── web.php                              ← Optional: admin dashboard Blade
-│   └── api.php                              ← All Next.js API endpoints
-│
+│   │   ├── Order.php
+│   │   ├── Payout.php
+│   │   ├── Product.php
+│   │   ├── Subscription.php
+│   │   └── User.php
+│   ├── Policies/
+│   │   ├── CategoryPolicy.php
+│   │   └── ProductPolicy.php
+│   ├── ProductStatus.php
+│   ├── Providers/
+│   │   ├── AppServiceProvider.php
+│   │   └── RouteServiceProvider.php
+│   └── Traits/
+│       └── ApiResponse.php
+├── bootstrap/
+│   ├── app.php
+│   └── providers.php
+├── config/
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── sanctum.php
+│   ├── services.php
+│   └── session.php
 ├── database/
-│   ├── migrations/                          ← Create tables
-│   └── seeders/                             ← Seed categories, plans
-│
-└── .env                                     ← DB, Stripe, S3 keys
+│   ├── factories/
+│   │   └── UserFactory.php
+│   ├── migrations/
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2026_02_14_104310_create_personal_access_tokens_table.php
+│   │   └── [new migration files for categories, products, subscriptions, orders, downloads, payouts]
+│   └── seeders/
+│       ├── DatabaseSeeder.php
+│       └── RolesAndPermissionsSeeder.php    ← Seed categories, plans
+├── public/
+│   ├── .htaccess
+│   ├── favicon.ico
+│   ├── index.php
+│   └── robots.txt
+├── resources/
+│   ├── css/
+│   │   └── app.css
+│   ├── js/
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views/
+│       └── welcome.blade.php
+├── routes/
+│   ├── api.php                              ← All Next.js API endpoints
+│   ├── console.php
+│   └── web.php                              ← Optional: admin dashboard Blade
+├── tests/
+│   ├── Feature/
+│   │   └── ExampleTest.php
+│   ├── Pest.php
+│   ├── TestCase.php
+│   └── Unit/
+│       └── ExampleTest.php
+└── artisan

@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\AdminController;
 
 Route::get('/health', function () {
@@ -27,6 +29,33 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
+
+/*
+|--------------------------------------------------------------------------
+| Webhooks (NO AUTH)
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/webhooks/paystack', [WebhookController::class, 'handlePaystack']);
+Route::post('/webhooks/stripe', [WebhookController::class, 'handleStripe']);
+Route::post('/webhooks/moniepoint', [WebhookController::class, 'handleMoniepoint']);
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')
+    ->middleware(['auth:sanctum', 'admin'])
+    ->group(function () {
+
+        Route::patch('/orders/{order}/status', 
+            [OrderManagementController::class, 'updateStatus']);
+
+    });
+
 
 
 // Protected Routes
