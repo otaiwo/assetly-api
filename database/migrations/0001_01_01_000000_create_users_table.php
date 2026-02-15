@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->enum('role', ['admin', 'vendor', 'user'])->default('user');
+            $table->string('stripe_id')->nullable();
+            $table->decimal('balance', 12, 2)->default(0);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

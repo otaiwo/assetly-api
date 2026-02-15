@@ -37,12 +37,18 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure the api routes for the application.
+     * Configure the rate limiters for the application.
      */
-protected function mapApiRoutes()
-{
-    Route::prefix('api')
-         ->middleware('api')
-         ->group(base_path('routes/api.php'));
-}
+    protected function configureRateLimiting(): void
+    {
+        // Default API limiter
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // Login limiter
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+    }
 }

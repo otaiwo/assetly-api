@@ -57,3 +57,39 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+assetly-api/           ← Laravel Backend
+│
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php          ← Login/Register, Sanctum tokens
+│   │   │   ├── ProductController.php       ← CRUD, list, details
+│   │   │   ├── CategoryController.php      ← List categories
+│   │   │   ├── SubscriptionController.php  ← Stripe integration
+│   │   │   ├── OrderController.php         ← One-time purchases
+│   │   │   └── AdminController.php         ← User & product management
+│   │   └── Middleware/
+│   │       └── RoleMiddleware.php         ← Restrict access by role
+│   │
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Product.php
+│   │   ├── Category.php
+│   │   ├── Subscription.php
+│   │   ├── Order.php
+│   │   ├── Download.php
+│   │   └── Payout.php
+│   │
+│   └── Policies/                           ← Optional: fine-grained access
+│
+├── routes/
+│   ├── web.php                              ← Optional: admin dashboard Blade
+│   └── api.php                              ← All Next.js API endpoints
+│
+├── database/
+│   ├── migrations/                          ← Create tables
+│   └── seeders/                             ← Seed categories, plans
+│
+└── .env                                     ← DB, Stripe, S3 keys
