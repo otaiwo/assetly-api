@@ -67,5 +67,25 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isVendor(): bool
     {
         return $this->role === 'vendor';
+
+
     }
+
+//     public function subscriptions()
+// {
+//     return $this->hasMany(Subscription::class);
+// }
+
+// public function activeSubscription()
+// {
+//     return $this->hasOne(Subscription::class)
+//                 ->where('status', 'active')
+//                 ->where('ends_at', '>', now());
+// }
+
+// public function payments()
+// {
+//     return $this->hasMany(Payment::class);
+// }
+
 }
