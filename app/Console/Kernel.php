@@ -5,7 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\User;
-use App\Models\CoinTransaction;
+use App\Models\CreditTransaction;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,18 +15,18 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule)
     {
-        // Daily coins reward at midnight
+        // Daily credit reward at midnight
         $schedule->call(function () {
             User::chunk(100, function($users) {
                 foreach ($users as $user) {
-                    $coins = 100; // daily bonus
-                    $user->increment('coins', $coins);
+                    $credit = 100; // daily bonus
+                    $user->increment('credits', $credit);
 
                     // Log the transaction
-                    CoinTransaction::create([
+                    CreditTransaction::create([
                         'user_id' => $user->id,
                         'type' => 'credit',
-                        'amount' => $coins,
+                        'amount' => $credit,
                         'source' => 'daily_bonus'
                     ]);
                 }

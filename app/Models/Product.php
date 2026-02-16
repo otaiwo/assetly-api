@@ -20,7 +20,7 @@ class Product extends Model
         'image',
         'status',
         'type',       // 'free' or 'pro'
-        'coin_cost',  // cost for logged-in users
+        'credit_cost',  // credit cost for logged-in users
         'file_path',  // path to downloadable file
     ];
 

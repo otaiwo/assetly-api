@@ -5,21 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use App\Models\UserCoin;
-use App\Models\CoinTransaction;
+use App\Models\UserCredit;
+use App\Models\CreditTransaction;
 use App\Models\User;
 
 class SubscriptionController extends Controller
 {
     /**
-     * Claim daily free coins (expires in 24h)
+     * Claim daily free credits (expires in 24h)
      */
- public function claimDailyCoins(Request $request)
+ public function claimDailyCredits(Request $request)
 {
     $user = Auth::user();
 
     // Check if user already claimed today using calendar day
-    $alreadyClaimed = UserCoin::where('user_id', $user->id)
+    $alreadyClaimed = UserCredit::where('user_id', $user->id)
         ->where('type', 'daily_bonus')
         ->whereDate('created_at', now()->toDateString()) // only today
         ->exists();
@@ -27,24 +27,24 @@ class SubscriptionController extends Controller
     if ($alreadyClaimed) {
         return response()->json([
             'success' => false,
-            'message' => 'You have already claimed your daily coins today.'
+            'message' => 'You have already claimed your daily credits today.'
         ], 403);
     }
 
-    $coins = 100; // daily bonus amount
+    $credits = 100; // daily bonus amount
 
-    $coinBatch = UserCoin::create([
+    $creditBatch = UserCredit::create([
         'user_id' => $user->id,
-        'amount' => $coins,
+        'amount' => $credits,
         'type' => 'daily_bonus',
         'expires_at' => now()->addDay(),
     ]);
 
     // Log transaction
-    CoinTransaction::create([
+    CreditTransaction::create([
         'user_id' => $user->id,
         'type' => 'credit',
-        'amount' => $coins,
+        'amount' => $credits,
         'source' => 'daily_bonus',
         'reference' => Str::uuid(),
               'status' => 'completed', 
@@ -52,13 +52,13 @@ class SubscriptionController extends Controller
 
     return response()->json([
         'success' => true,
-        'message' => "You received {$coins} daily coins! They will expire in 24 hours.",
-        'data' => $coinBatch
+        'message' => "You received {$credits} daily credits! They will expire in 24 hours.",
+        'data' => $creditBatch
     ]);
 }
 
     /**
-     * Recharge coins via payment provider
+     * Recharge credits via payment provider
      */
     public function recharge(Request $request)
     {
@@ -75,7 +75,7 @@ class SubscriptionController extends Controller
         $reference = Str::uuid();
 
         // Store pending transaction
-        CoinTransaction::create([
+        CreditTransaction::create([
             'user_id' => $user->id,
             'type' => 'credit',
             'amount' => $amount,
@@ -87,7 +87,7 @@ class SubscriptionController extends Controller
         // Example: return checkout URL / session info
         return response()->json([
             'success' => true,
-            'message' => 'Payment initiated, complete the payment to receive coins.',
+            'message' => 'Payment initiated, complete the payment to receive credits.',
             'payment_reference' => $reference,
             'payment_url' => 'https://provider-checkout-url.example.com' // replace with actual SDK
         ]);
@@ -96,20 +96,20 @@ class SubscriptionController extends Controller
 
 
     /**
-     * Show user coin balance and history
+     * Show user credit balance and history
      */
     public function balanceAndHistory()
     {
         $user = Auth::user();
 
-        $balance = UserCoin::where('user_id', $user->id)
+        $balance = UserCredit::where('user_id', $user->id)
             ->where('used', false)
             ->where(function($q){
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
             ->sum('amount');
 
-        $transactions = CoinTransaction::where('user_id', $user->id)
+        $transactions = CreditTransaction::where('user_id', $user->id)
             ->latest()
             ->take(20)
             ->get();
@@ -137,10 +137,10 @@ class SubscriptionController extends Controller
         $reference = Str::uuid();
 
         // Store pending transaction
-        CoinTransaction::create([
+        CreditTransaction::create([
             'user_id' => $user->id,
             'type' => 'credit',
-            'amount' => 0, // optional, plan doesn’t give coins
+            'amount' => 0, // optional, plan doesn’t give credits
             'source' => 'subscription_'.$plan,
             'reference' => $reference
         ]);

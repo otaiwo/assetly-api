@@ -58,34 +58,44 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
+
 assetly-api/
+├── .editorconfig
 ├── .env
 ├── .env.example
 ├── app/
+│   ├── Console/
+│   │   └── Kernel.php
 │   ├── Exceptions/
 │   │   └── Handler.php
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── AdminController.php          ← User & product management
-│   │   │   ├── AuthController.php           ← Login/Register, Sanctum tokens
-│   │   │   ├── CategoryController.php       ← List categories
-│   │   │   ├── OrderController.php          ← One-time purchases
-│   │   │   ├── ProductController.php        ← CRUD, list, details
-│   │   │   └── SubscriptionController.php   ← Payment integration (stripe, monify, paystack)
+│   │   │   ├── Admin/
+│   │   │   │   └── AdminController.php          ← User & product management
+│   │   │   ├── AuthController.php               ← Login/Register, Sanctum tokens
+│   │   │   ├── CategoryController.php           ← List categories
+│   │   │   ├── DownloadController.php           ← Handle file downloads
+│   │   │   ├── OrderController.php              ← One-time purchases
+│   │   │   ├── ProductController.php            ← CRUD, list, details
+│   │   │   ├── SubscriptionController.php       ← Payment integration (stripe, monify, paystack)
+│   │   │   └── WebhookController.php            ← Payment webhooks
 │   │   ├── Middleware/
-│   │   │   └── RoleMiddleware.php           ← Restrict access by role
+│   │   │   └── RoleMiddleware.php               ← Restrict access by role
 │   │   └── Resources/
 │   │       └── CategoryResource.php
 │   ├── Models/
 │   │   ├── Category.php
+│   │   ├── CreditTransaction.php
 │   │   ├── Download.php
 │   │   ├── Order.php
 │   │   ├── Payout.php
 │   │   ├── Product.php
 │   │   ├── Subscription.php
-│   │   └── User.php
+│   │   ├── User.php
+│   │   └── UserCredit.php
 │   ├── Policies/
 │   │   ├── CategoryPolicy.php
+│   │   ├── OrderPolicy.php
 │   │   └── ProductPolicy.php
 │   ├── ProductStatus.php
 │   ├── Providers/
@@ -93,9 +103,12 @@ assetly-api/
 │   │   └── RouteServiceProvider.php
 │   └── Traits/
 │       └── ApiResponse.php
+├── artisan
 ├── bootstrap/
 │   ├── app.php
 │   └── providers.php
+├── composer.json
+├── composer.lock
 ├── config/
 │   ├── app.php
 │   ├── auth.php
@@ -116,15 +129,23 @@ assetly-api/
 │   │   ├── 0001_01_01_000001_create_cache_table.php
 │   │   ├── 0001_01_01_000002_create_jobs_table.php
 │   │   ├── 2026_02_14_104310_create_personal_access_tokens_table.php
-│   │   └── [new migration files for categories, products, subscriptions, orders, downloads, payouts]
+│   │   ├── 2026_02_15_172846_create_orders_table.php
+│   │   ├── 2026_02_15_191325_create_products_table.php
+│   │   ├── 2026_02_15_191806_create_downloads_table.php
+│   │   ├── 2026_02_15_202047_create_credit_transactions_table.php
+│   │   └── [additional migrations for categories, subscriptions, payouts]
 │   └── seeders/
 │       ├── DatabaseSeeder.php
-│       └── RolesAndPermissionsSeeder.php    ← Seed categories, plans
+│       └── RolesAndPermissionsSeeder.php       ← Seed categories, plans
+├── package-lock.json
+├── package.json
+├── phpunit.xml
 ├── public/
 │   ├── .htaccess
 │   ├── favicon.ico
 │   ├── index.php
 │   └── robots.txt
+├── README.md
 ├── resources/
 │   ├── css/
 │   │   └── app.css
@@ -132,11 +153,11 @@ assetly-api/
 │   │   ├── app.js
 │   │   └── bootstrap.js
 │   └── views/
-│       └── welcome.blade.php
+│       └── welcome.blade.php                    ← Optional: admin dashboard Blade
 ├── routes/
-│   ├── api.php                              ← All Next.js API endpoints
+│   ├── api.php                                   ← All Next.js API endpoints
 │   ├── console.php
-│   └── web.php                              ← Optional: admin dashboard Blade
+│   └── web.php
 ├── tests/
 │   ├── Feature/
 │   │   └── ExampleTest.php
@@ -144,4 +165,4 @@ assetly-api/
 │   ├── TestCase.php
 │   └── Unit/
 │       └── ExampleTest.php
-└── artisan
+└── vite.config.js

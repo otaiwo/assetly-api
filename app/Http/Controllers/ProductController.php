@@ -103,7 +103,7 @@ class ProductController extends Controller
             'category_id' => 'sometimes|required|exists:categories,id',
             'image' => 'nullable|image|max:2048',
             'type' => 'required|in:free,pro',
-            'coin_cost' => 'required_if:type,pro|integer|min:0',
+            'credit_cost' => 'required_if:type,pro|integer|min:0',
         ]);
 
         if ($request->hasFile('image')) {

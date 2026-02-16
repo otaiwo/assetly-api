@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         // ==========================
-        // COIN TRANSACTIONS TABLE
+        // CREDIT TRANSACTIONS TABLE
         // ==========================
-        Schema::create('coin_transactions', function (Blueprint $table) {
+        Schema::create('credit_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('reference')->unique();
@@ -26,9 +26,9 @@ return new class extends Migration
         });
 
         // ==========================
-        // USER COINS TABLE
+        // USER CREDITS TABLE
         // ==========================
-        Schema::create('user_coins', function (Blueprint $table) {
+        Schema::create('user_credits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('amount');
@@ -44,7 +44,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_coins');
-        Schema::dropIfExists('coin_transactions');
+        Schema::dropIfExists('user_credits');
+        Schema::dropIfExists('credit_transactions');
     }
 };

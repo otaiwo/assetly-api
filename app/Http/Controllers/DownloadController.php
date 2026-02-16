@@ -64,15 +64,15 @@ class DownloadController extends Controller
             return $this->serveFile($product, null, $ip, $deviceId, $guestId);
         }
 
-        // Logged-in user → atomic coin deduction
+        // Logged-in user → atomic credit deduction
         $success = $user->where('id', $user->id)
-            ->where('coins', '>=', $product->coin_cost)
-            ->decrement('coins', $product->coin_cost);
+            ->where('credit', '>=', $product->credit_cost)
+            ->decrement('credit', $product->credit_cost);
 
         if (!$success) {
             return response()->json([
                 'success' => false,
-                'message' => 'Not enough coins to download this asset.'
+                'message' => 'Not enough credits to download this asset.'
             ], 403);
         }
 

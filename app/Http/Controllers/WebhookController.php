@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\CoinTransaction;
-use App\Models\UserCoin;
+use App\Models\CreditTransaction;
+use App\Models\UserCredit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Stripe\Webhook;
+use Stripe\Exception\SignatureVerificationException;
+
 
 class WebhookController extends Controller
 {
@@ -40,7 +43,7 @@ class WebhookController extends Controller
             // Try marking as ORDER first
             $this->markOrderPaid($reference, 'paystack', $channel);
 
-            // Then try marking as COIN transaction
+            // Then try marking as CREDIT transaction
             $this->markTransactionCompleted($reference, 'paystack');
         }
 
@@ -80,16 +83,17 @@ class WebhookController extends Controller
         $sigHeader = $request->header('stripe-signature');
 
         try {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                config('services.stripe.webhook_secret')
-            );
-        } catch (\UnexpectedValueException $e) {
-            return response()->json(['message' => 'Invalid payload'], 400);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            return response()->json(['message' => 'Invalid signature'], 400);
-        }
+    $event = Webhook::constructEvent(
+        $payload,
+        $sigHeader,
+        config('services.stripe.webhook_secret')
+    );
+} catch (\UnexpectedValueException $e) {
+    return response()->json(['message' => 'Invalid payload'], 400);
+} catch (SignatureVerificationException $e) {
+    return response()->json(['message' => 'Invalid signature'], 400);
+}
+
 
         if ($event->type === 'payment_intent.succeeded') {
 
@@ -142,7 +146,7 @@ class WebhookController extends Controller
 
     /**
      * ==============================
-     * MARK COIN TRANSACTION COMPLETED
+     * MARK CREDIT TRANSACTION COMPLETED
      * ==============================
      */
     protected function markTransactionCompleted($reference, $gateway)
@@ -153,7 +157,7 @@ class WebhookController extends Controller
 
         DB::transaction(function () use ($reference, $gateway) {
 
-            $transaction = CoinTransaction::where('reference', $reference)
+            $transaction = CreditTransaction::where('reference', $reference)
                 ->where('status', 'pending')
                 ->lockForUpdate()
                 ->first();
@@ -168,8 +172,8 @@ class WebhookController extends Controller
                 return;
             }
 
-            // Add coins
-            UserCoin::create([
+            // Add credits
+            UserCredit::create([
                 'user_id' => $user->id,
                 'amount' => $transaction->amount,
                 'type' => 'recharge',

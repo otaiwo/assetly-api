@@ -4,19 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserCoin extends Model
+class CreditTransaction extends Model
 {
     protected $fillable = [
         'user_id',
+        'reference',
         'amount',
         'type',
-        'expires_at',
-        'used',
-    ];
-
-    protected $casts = [
-        'expires_at' => 'datetime',
-        'used' => 'boolean',
+        'source',
+        'status',
     ];
 
     public function user()
