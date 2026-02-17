@@ -36,19 +36,27 @@ class RouteServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Configure the rate limiters for the application.
-     */
-    protected function configureRateLimiting(): void
+   /**
+ * Configure the rate limiters for the application.
+ */
+  protected function configureRateLimiting(): void
     {
-        // Default API limiter
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        // Login limiter - 5 attempts per minute per IP
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Too many login attempts. Please try again in 1 minute.',
+                        'retry_after' => $headers['Retry-After'] ?? 60
+                    ], 429, $headers);
+                });
         });
 
-        // Login limiter
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+        // You can add other limiters here too
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

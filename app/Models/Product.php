@@ -19,9 +19,9 @@ class Product extends Model
         'user_id',
         'image',
         'status',
-        'type',       // 'free' or 'pro'
-        'credit_cost',  // credit cost for logged-in users
-        'file_path',  // path to downloadable file
+        'type',       
+        'credit_cost',  
+        'file_path',  
     ];
 
     protected $casts = [

@@ -30,7 +30,11 @@ Route::get('/test', function () {
 |--------------------------------------------------------------------------
 */
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+Route::middleware(['throttle:login'])->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);

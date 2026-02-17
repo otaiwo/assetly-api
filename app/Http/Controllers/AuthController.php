@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -34,7 +33,7 @@ class AuthController extends Controller
      $user = User::create([
     'name' => $validated['name'],
     'email' => $validated['email'],
-    'password' => $validated['password'],
+    'password' => bcrypt($validated['password']),
 ]);
 $user->assignRole('buyer');
 
@@ -55,15 +54,7 @@ $user->assignRole('buyer');
     // LOGIN
 public function login(Request $request)
 {
-    $emailOrIp = $request->ip(); // or $request->email for per-user lockout
-
-    // Check lockout
-    if (RateLimiter::tooManyAttempts($emailOrIp, 5)) { // 5 failed attempts
-        throw ValidationException::withMessages([
-            'email' => ['Too many login attempts. Try again in ' . RateLimiter::availableIn($emailOrIp) . ' seconds.'],
-        ]);
-    }
-
+  
     $validated = $request->validate([
         'email' => ['required', 'email'],
         'password' => ['required'],
@@ -71,11 +62,8 @@ public function login(Request $request)
 
     $user = User::where('email', $validated['email'])->first();
 
-    // Failed login
     if (! $user || ! Hash::check($validated['password'], $user->password)) {
-        RateLimiter::hit($emailOrIp, 60); // increment failed attempts
-
-        // Log failed attempt
+        // Log failed attempt (without rate limiting)
         Log::warning('Failed login attempt', [
             'email' => $request->email,
             'ip' => $request->ip(),
@@ -88,9 +76,6 @@ public function login(Request $request)
         ]);
     }
 
-    // Successful login resets failed attempts
-    RateLimiter::clear($emailOrIp);
-
     // Log successful login
     Log::info('Successful login', [
         'email' => $user->email,
@@ -99,10 +84,9 @@ public function login(Request $request)
         'time' => now(),
     ]);
 
-    // Optional: revoke old tokens for single active session
+    // Optional: revoke old tokens
     $user->tokens()->delete();
 
-    // Create token with device info
     $deviceName = $request->header('User-Agent') ?? 'unknown device';
     $token = $user->createToken($deviceName)->plainTextToken;
 
