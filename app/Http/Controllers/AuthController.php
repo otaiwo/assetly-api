@@ -7,49 +7,67 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     // REGISTER
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => [
-        'required',
-        'string',
-        'min:8',               
-        'confirmed',           
-        'regex:/[a-z]/',       
-        'regex:/[A-Z]/',       
-        'regex:/[0-9]/',       
-        'regex:/[@$!%*?&#]/',  
-    ],
-        ]);
+    
+public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'unique:users,email'],
+        'password' => [
+            'required',
+            'string',
+            'min:8',
+            'confirmed',
+            'regex:/[a-z]/',
+            'regex:/[A-Z]/',
+            'regex:/[0-9]/',
+            'regex:/[@$!%*?&#]/',
+        ],
+    ]);
 
-        // ✅ Create user (password is auto-hashed via model)
-     $user = User::create([
-    'name' => $validated['name'],
-    'email' => $validated['email'],
-    'password' => bcrypt($validated['password']),
-]);
-$user->assignRole('buyer');
+DB::beginTransaction(); // ensures no half-registered users
 
-        // ⚡ Send email verification
-        $user->sendEmailVerificationNotification();
+try {
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => ($validated['password']),
+        'balance' => 0,
+    ]);
 
-        // ✅ Create token with device metadata
-        $deviceName = $request->header('User-Agent') ?? 'unknown device';
-        $token = $user->createToken($deviceName, ['*'])->plainTextToken;
+    // assign role via Spatie
+    $user->assignRole('buyer');
 
-        return response()->json([
-            'message' => 'User registered successfully. Please verify your email.',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
-    }
+    // send verification email
+    $user->sendEmailVerificationNotification();
+
+    // create token
+    $deviceName = $request->header('User-Agent') ?? 'unknown device';
+    $token = $user->createToken($deviceName, ['*'])->plainTextToken;
+
+    DB::commit();
+
+    return response()->json([
+        'message' => 'User registered successfully. Please verify your email.',
+        'user' => $user,
+        'token' => $token,
+    ], 201);
+
+} catch (\Throwable $e) {
+    DB::rollBack();
+    return response()->json([
+        'success' => false,
+        'message' => 'Registration failed',
+        'error' => $e->getMessage(),
+    ], 500);
+}
+}
 
     // LOGIN
 public function login(Request $request)

@@ -30,6 +30,9 @@ Route::get('/test', function () {
 |--------------------------------------------------------------------------
 */
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+     ->name('verification.verify');
+
 
 Route::middleware(['throttle:login'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
