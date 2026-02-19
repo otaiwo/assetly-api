@@ -3,75 +3,75 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 class Order extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
-    /**
-     * Mass assignable fields
-     */
     protected $fillable = [
         'user_id',
-        'product_id',
-        'amount',
+        'total_amount',
         'currency',
-        'status',
         'internal_reference',
         'payment_reference',
         'payment_gateway',
-        'gateway_reference',
         'payment_method',
+        'platform_fee',
+        'seller_earnings',
+        'status',
         'paid_at',
         'failed_at',
-        'cancelled_at',
     ];
 
-    /**
-     * Attribute casting
-     */
     protected $casts = [
-        'amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'platform_fee' => 'decimal:2',
+        'seller_earnings' => 'decimal:2',
         'paid_at' => 'datetime',
         'failed_at' => 'datetime',
-        'cancelled_at' => 'datetime',
     ];
 
-    /**
-     * Boot method to auto-generate UUIDs
-     */
     protected static function booted()
     {
         static::creating(function ($order) {
+
             if (empty($order->internal_reference)) {
-                $order->internal_reference = (string) Str::uuid();
+                $order->internal_reference =
+                    'ORD-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
             }
 
+            // Only auto-generate if you want internal fallback
             if (empty($order->payment_reference)) {
-                $order->payment_reference = (string) Str::uuid();
+                $order->payment_reference =
+                    'PAY-' . now()->format('Ymd') . '-' . strtoupper(Str::random(8));
             }
         });
     }
 
-    /**
-     * Relationships
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function product()
+    public function items()
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Scopes
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Status Scopes
+    |--------------------------------------------------------------------------
+    */
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -87,8 +87,35 @@ class Order extends Model
         return $query->where('status', 'failed');
     }
 
+    public function scopeRefunded($query)
+    {
+        return $query->where('status', 'refunded');
+    }
+
     public function scopeCancelled($query)
     {
         return $query->where('status', 'cancelled');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    public function markAsPaid()
+    {
+        $this->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+    }
+
+    public function markAsFailed()
+    {
+        $this->update([
+            'status' => 'failed',
+            'failed_at' => now(),
+        ]);
     }
 }

@@ -52,40 +52,51 @@ class ProductController extends Controller
     /**
      * Create a new product
      */
-    public function store(Request $request)
-    {
-        $this->authorize('create', Product::class);
+public function store(Request $request)
+{
+    $user = auth()->user();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|max:2048'
-        ]);
-
-        $validated['user_id'] = auth()->id();
-        $validated['status'] = 'pending';
-
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')
-                ->store('products', 'public');
-        }
-
-        $product = Product::create($validated);
-
+    if (! $user->hasAnyRole(['admin', 'seller'])) {
         return response()->json([
-            'success' => true,
-            'message' => 'Product submitted successfully and is pending approval',
-            'data' => $product->load('category', 'user')
-        ], 201);
+            'success' => false,
+            'message' => 'Unauthorized. Only sellers or admins can create products.',
+        ], 403);
     }
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'category_id' => 'required|exists:categories,id',
+        'image' => 'nullable|image|max:2048'
+    ]);
+
+    $validated['user_id'] = $user->id;
+    $validated['status'] = $user->hasRole('admin') ? 'approved' : 'pending';
+
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')
+            ->store('products', 'public');
+    }
+
+    $product = Product::create($validated);
+
+    return response()->json([
+        'success' => true,
+        'message' => $validated['status'] === 'approved'
+            ? 'Product submitted successfully and auto-approved'
+            : 'Product submitted successfully and is pending approval',
+        'data' => $product->load('category', 'user')
+    ], 201);
+}
 
     /**
      * Update a product
      */
     public function update(Request $request, Product $product)
     {
+        // dd('UPDATE METHOD HIT');
+
         $this->authorize('update', $product);
 
         // Prevent editing approved products unless admin
@@ -102,8 +113,8 @@ class ProductController extends Controller
             'price' => 'sometimes|required|numeric|min:0',
             'category_id' => 'sometimes|required|exists:categories,id',
             'image' => 'nullable|image|max:2048',
-            'type' => 'required|in:free,pro',
-            'credit_cost' => 'required_if:type,pro|integer|min:0',
+            'type' => 'sometimes|required|in:free,pro',
+            'credit_cost' => 'nullable|required_if:type,pro|integer|min:1',
         ]);
 
         if ($request->hasFile('image')) {

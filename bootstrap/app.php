@@ -19,9 +19,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
+    ->withMiddleware(function ($middleware) {
+    $middleware->alias([
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+    ]);
+})
 
     ->withExceptions(function (Exceptions $exceptions): void {
 
@@ -50,7 +52,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
 
     ->create();
-
 
 // Register rate limiters AFTER app is created
 $app->booted(function () {

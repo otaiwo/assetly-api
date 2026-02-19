@@ -3,30 +3,46 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Category;
+use App\Models\Product;
 
-class CategoryPolicy
+class ProductPolicy
 {
-    // Only admin can create a category
+    // Admin and Seller can create products
     public function create(User $user): bool
     {
-        return $user->is_admin;
+        return $user->hasAnyRole(['admin', 'seller']);
     }
 
-    // Only admin can update a category
-    public function update(User $user, Category $category): bool
+    // Admin can update anything, Seller can update their own product
+    public function update(User $user, Product $product): bool
     {
-        return $user->is_admin;
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('seller') && $product->user_id === $user->id) {
+            return true;
+        }
+
+        return false;
     }
 
-    // Only admin can delete a category
-    public function delete(User $user, Category $category): bool
+    // Admin can delete anything, Seller can delete their own product
+    public function delete(User $user, Product $product): bool
     {
-        return $user->is_admin;
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('seller') && $product->user_id === $user->id) {
+            return true;
+        }
+
+        return false;
     }
 
-    // You can allow everyone to view categories
-    public function view(User $user, Category $category): bool
+    // Anyone authenticated can view
+    public function view(User $user, Product $product): bool
     {
         return true;
     }
